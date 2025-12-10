@@ -1,61 +1,46 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
+import { PrismaClient } from '@prisma/client'
 import { authOptions } from '@/lib/auth-options'
-import { prisma } from '@/lib/prisma'
 
-export async function GET(request: Request) {
+const prisma = new PrismaClient()
+
+export async function GET() {
   try {
-    const session = await getServerSession(authOptions)
-    
-    if (!session || session.user.role !== 'ADMIN') {
-      return NextResponse.json(
-        { error: 'נדרשת הרשאת מנהל' },
-        { status: 403 }
-      )
-    }
-
-    // Get or create default settings
-    let settings = await prisma.settings.findFirst()
-    
-    if (!settings) {
-      settings = await prisma.settings.create({
-        data: {}
-      })
-    }
-
-    return NextResponse.json(settings)
+    const settings = await prisma.systemSettings.findFirst()
+    return NextResponse.json(settings || {})
   } catch (error) {
     console.error('Error fetching settings:', error)
     return NextResponse.json(
-      { error: 'שגיאה באחזור הגדרות' },
+      { error: 'Failed to fetch settings' },
       { status: 500 }
     )
   }
 }
 
-export async function POST(request: Request) {
+export async function PATCH(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
     if (!session || session.user.role !== 'ADMIN') {
       return NextResponse.json(
-        { error: 'נדרשת הרשאת מנהל' },
-        { status: 403 }
+        { error: 'Unauthorized' },
+        { status: 401 }
       )
     }
 
     const body = await request.json()
-
-    // Get or create settings
-    let settings = await prisma.settings.findFirst()
     
-    if (!settings) {
-      settings = await prisma.settings.create({
+    const existingSettings = await prisma.systemSettings.findFirst()
+    
+    let settings
+    if (existingSettings) {
+      settings = await prisma.systemSettings.update({
+        where: { id: existingSettings.id },
         data: body
       })
     } else {
-      settings = await prisma.settings.update({
-        where: { id: settings.id },
+      settings = await prisma.systemSettings.create({
         data: body
       })
     }
@@ -64,7 +49,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Error updating settings:', error)
     return NextResponse.json(
-      { error: 'שגיאה בעדכון הגדרות' },
+      { error: 'Failed to update settings' },
       { status: 500 }
     )
   }

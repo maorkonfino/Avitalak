@@ -1,49 +1,26 @@
-import { NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth-options"
+import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { PrismaClient } from '@prisma/client'
+import { authOptions } from '@/lib/auth-options'
 
-export async function PATCH(
-  request: Request,
-  context: { params: Promise<{ id: string }> }
+const prisma = new PrismaClient()
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session?.user) {
+    if (!session) {
       return NextResponse.json(
-        { error: "נדרשת התחברות" },
+        { error: 'Unauthorized' },
         { status: 401 }
       )
     }
 
-    const { id } = await context.params
-    const data = await request.json()
-
-    // Get the appointment
     const appointment = await prisma.appointment.findUnique({
-      where: { id }
-    })
-
-    if (!appointment) {
-      return NextResponse.json(
-        { error: "תור לא נמצא" },
-        { status: 404 }
-      )
-    }
-
-    // Check permissions
-    if (session.user.role !== 'ADMIN' && appointment.userId !== session.user.id) {
-      return NextResponse.json(
-        { error: "אין הרשאה" },
-        { status: 403 }
-      )
-    }
-
-    // Update appointment
-    const updatedAppointment = await prisma.appointment.update({
-      where: { id },
-      data,
+      where: { id: params.id },
       include: {
         service: true,
         user: {
@@ -57,103 +34,96 @@ export async function PATCH(
       }
     })
 
-    return NextResponse.json(updatedAppointment)
+    if (!appointment) {
+      return NextResponse.json(
+        { error: 'Appointment not found' },
+        { status: 404 }
+      )
+    }
+
+    return NextResponse.json(appointment)
   } catch (error) {
-    console.error("Error updating appointment:", error)
+    console.error('Error fetching appointment:', error)
     return NextResponse.json(
-      { error: "שגיאה בעדכון התור" },
+      { error: 'Failed to fetch appointment' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    const body = await request.json()
+    const { date, time, status, notes } = body
+
+    const updateData: any = {}
+    if (date && time) {
+      updateData.date = new Date(`${date}T${time}`)
+    }
+    if (status) updateData.status = status
+    if (notes !== undefined) updateData.notes = notes
+
+    const appointment = await prisma.appointment.update({
+      where: { id: params.id },
+      data: updateData,
+      include: {
+        service: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true
+          }
+        }
+      }
+    })
+
+    return NextResponse.json(appointment)
+  } catch (error) {
+    console.error('Error updating appointment:', error)
+    return NextResponse.json(
+      { error: 'Failed to update appointment' },
       { status: 500 }
     )
   }
 }
 
 export async function DELETE(
-  request: Request,
-  context: { params: Promise<{ id: string }> }
+  request: NextRequest,
+  { params }: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session?.user) {
+    if (!session) {
       return NextResponse.json(
-        { error: "נדרשת התחברות" },
+        { error: 'Unauthorized' },
         { status: 401 }
       )
     }
 
-    const { id } = await context.params
-
-    // Get the appointment with service details
-    const appointment = await prisma.appointment.findUnique({
-      where: { id },
-      include: {
-        service: true
-      }
-    })
-
-    if (!appointment) {
-      return NextResponse.json(
-        { error: "תור לא נמצא" },
-        { status: 404 }
-      )
-    }
-
-    // Check permissions
-    if (session.user.role !== 'ADMIN' && appointment.userId !== session.user.id) {
-      return NextResponse.json(
-        { error: "אין הרשאה" },
-        { status: 403 }
-      )
-    }
-
-    // Delete the appointment
     await prisma.appointment.delete({
-      where: { id }
+      where: { id: params.id }
     })
 
-    // Check waitlist for this time slot
-    const appointmentDate = new Date(appointment.date)
-    const timeSlot = `${appointmentDate.getHours().toString().padStart(2, '0')}:${appointmentDate.getMinutes().toString().padStart(2, '0')}`
-    
-    const waitlistEntry = await prisma.waitlist.findFirst({
-      where: {
-        serviceId: appointment.serviceId,
-        date: {
-          gte: new Date(appointmentDate.toDateString()),
-          lt: new Date(new Date(appointmentDate.toDateString()).getTime() + 24 * 60 * 60 * 1000),
-        },
-        timeSlot,
-        active: true,
-        notified: false,
-      },
-      include: {
-        user: true,
-        service: true,
-      },
-      orderBy: {
-        createdAt: 'asc',
-      },
-    })
-
-    if (waitlistEntry) {
-      // Mark as notified
-      await prisma.waitlist.update({
-        where: { id: waitlistEntry.id },
-        data: { notified: true },
-      })
-      
-      console.log(`📧 התפנה תור! התראה נשלחת ל-${waitlistEntry.user.email}`)
-      // TODO: שליחת מייל בפועל
-    }
-
-    return NextResponse.json({ 
-      message: "התור בוטל בהצלחה",
-      waitlistNotified: !!waitlistEntry
-    })
+    return NextResponse.json({ message: 'Appointment deleted' })
   } catch (error) {
-    console.error("Error deleting appointment:", error)
+    console.error('Error deleting appointment:', error)
     return NextResponse.json(
-      { error: "שגיאה במחיקת התור" },
+      { error: 'Failed to delete appointment' },
       { status: 500 }
     )
   }

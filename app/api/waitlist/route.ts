@@ -1,82 +1,49 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
+import { PrismaClient } from '@prisma/client'
 import { authOptions } from '@/lib/auth-options'
-import { prisma } from '@/lib/prisma'
 
-// GET - קבלת רשימת המתנה
-export async function GET(request: Request) {
+const prisma = new PrismaClient()
+
+export async function GET() {
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session) {
+    if (!session || session.user.role !== 'ADMIN') {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       )
     }
 
-    const { searchParams } = new URL(request.url)
-    const serviceId = searchParams.get('serviceId')
-    const date = searchParams.get('date')
-
-    const where: any = {
-      active: true,
-    }
-
-    // משתמש רגיל רואה רק את שלו
-    if (session.user.role !== 'ADMIN') {
-      where.userId = session.user.id
-    }
-
-    if (serviceId) {
-      where.serviceId = serviceId
-    }
-
-    if (date) {
-      where.date = {
-        gte: new Date(date),
-        lt: new Date(new Date(date).getTime() + 24 * 60 * 60 * 1000),
-      }
-    }
-
-    const waitlist = await prisma.waitlist.findMany({
-      where,
+    const waitlist = await prisma.waitlistEntry.findMany({
       include: {
+        service: true,
         user: {
           select: {
             id: true,
             name: true,
             email: true,
-            phone: true,
-          },
-        },
-        service: {
-          select: {
-            id: true,
-            name: true,
-            duration: true,
-          },
-        },
+            phone: true
+          }
+        }
       },
-      orderBy: [
-        { date: 'asc' },
-        { timeSlot: 'asc' },
-        { createdAt: 'asc' }, // First come, first served
-      ],
+      orderBy: {
+        createdAt: 'asc'
+      }
     })
 
     return NextResponse.json(waitlist)
   } catch (error) {
     console.error('Error fetching waitlist:', error)
     return NextResponse.json(
-      { error: 'שגיאה בטעינת רשימת המתנה' },
+      { error: 'Failed to fetch waitlist' },
       { status: 500 }
     )
   }
 }
 
-// POST - הוספה לרשימת המתנה
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
@@ -88,84 +55,33 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { serviceId, date, timeSlot } = body
+    const { serviceId, preferredDate, notes } = body
 
-    if (!serviceId || !date) {
-      return NextResponse.json(
-        { error: 'חסרים פרטים נדרשים' },
-        { status: 400 }
-      )
-    }
-
-    // אם timeSlot לא נשלח - יוצרים רשומה לכל היום
-    if (!timeSlot) {
-      // בדיקה אם כבר נרשם לאותו תאריך
-      const existing = await prisma.waitlist.findFirst({
-        where: {
-          userId: session.user.id,
-          serviceId,
-          date: new Date(date),
-          active: true,
-        },
-      })
-
-      if (existing) {
-        return NextResponse.json(
-          { error: 'כבר נרשמת לרשימת המתנה לתאריך זה' },
-          { status: 409 }
-        )
-      }
-
-      const waitlistEntry = await prisma.waitlist.create({
-        data: {
-          userId: session.user.id,
-          serviceId,
-          date: new Date(date),
-          timeSlot: 'ANY', // כל השעות
-        },
-        include: {
-          service: true,
-        },
-      })
-
-      return NextResponse.json(waitlistEntry, { status: 201 })
-    }
-
-    // בדיקה אם כבר ברשימת המתנה
-    const existing = await prisma.waitlist.findFirst({
-      where: {
-        userId: session.user.id,
-        serviceId,
-        date: new Date(date),
-        timeSlot,
-        active: true,
-      },
-    })
-
-    if (existing) {
-      return NextResponse.json(
-        { error: 'כבר נרשמת לרשימת המתנה עבור זמן זה' },
-        { status: 409 }
-      )
-    }
-
-    const waitlistEntry = await prisma.waitlist.create({
+    const entry = await prisma.waitlistEntry.create({
       data: {
         userId: session.user.id,
         serviceId,
-        date: new Date(date),
-        timeSlot,
+        preferredDate: preferredDate ? new Date(preferredDate) : null,
+        notes
       },
       include: {
         service: true,
-      },
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true
+          }
+        }
+      }
     })
 
-    return NextResponse.json(waitlistEntry, { status: 201 })
+    return NextResponse.json(entry, { status: 201 })
   } catch (error) {
     console.error('Error creating waitlist entry:', error)
     return NextResponse.json(
-      { error: 'שגיאה ביצירת רשומה ברשימת המתנה' },
+      { error: 'Failed to create waitlist entry' },
       { status: 500 }
     )
   }

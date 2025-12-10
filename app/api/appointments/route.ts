@@ -1,47 +1,45 @@
-import { NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth-options"
+import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { PrismaClient } from '@prisma/client'
+import { authOptions } from '@/lib/auth-options'
 
-export async function GET(request: Request) {
+const prisma = new PrismaClient()
+
+export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
+    
+    if (!session) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
     const { searchParams } = new URL(request.url)
     const userId = searchParams.get('userId')
-    const status = searchParams.get('status')
-    const publicView = searchParams.get('public') === 'true'
+    const date = searchParams.get('date')
+    const serviceId = searchParams.get('serviceId')
 
-    // Public view - only return occupied slots without user details
-    if (publicView || !session?.user) {
-      const appointments = await prisma.appointment.findMany({
-        where: {
-          status: {
-            not: 'CANCELLED',
-          },
-        },
-        select: {
-          id: true,
-          date: true,
-          endDate: true,
-          serviceId: true,
-          status: true,
-        },
-      })
-      return NextResponse.json(appointments)
-    }
-
-    // Authenticated view - full details
     let where: any = {}
 
-    // Regular users can only see their own appointments
-    if (session.user.role !== 'ADMIN') {
-      where.userId = session.user.id
-    } else if (userId) {
-      where.userId = userId
+    if (session.user.role === 'USER' || userId) {
+      where.userId = userId || session.user.id
     }
 
-    if (status) {
-      where.status = status
+    if (date) {
+      const startDate = new Date(date)
+      const endDate = new Date(date)
+      endDate.setDate(endDate.getDate() + 1)
+      
+      where.date = {
+        gte: startDate,
+        lt: endDate
+      }
+    }
+
+    if (serviceId) {
+      where.serviceId = serviceId
     }
 
     const appointments = await prisma.appointment.findMany({
@@ -57,96 +55,44 @@ export async function GET(request: Request) {
           }
         }
       },
-      orderBy: { date: 'asc' }
+      orderBy: {
+        date: 'desc'
+      }
     })
 
     return NextResponse.json(appointments)
   } catch (error) {
-    console.error("Error fetching appointments:", error)
+    console.error('Error fetching appointments:', error)
     return NextResponse.json(
-      { error: "שגיאה בטעינת התורים" },
+      { error: 'Failed to fetch appointments' },
       { status: 500 }
     )
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session?.user) {
+    if (!session) {
       return NextResponse.json(
-        { error: "נדרשת התחברות" },
+        { error: 'Unauthorized' },
         { status: 401 }
       )
     }
 
-    const { serviceId, date, notes } = await request.json()
+    const body = await request.json()
+    const { serviceId, date, time, notes, userId } = body
 
-    if (!serviceId || !date) {
-      return NextResponse.json(
-        { error: "נא למלא את כל השדות הנדרשים" },
-        { status: 400 }
-      )
-    }
-
-    // Get service to calculate end time
-    const service = await prisma.service.findUnique({
-      where: { id: serviceId }
-    })
-
-    if (!service) {
-      return NextResponse.json(
-        { error: "שירות לא נמצא" },
-        { status: 404 }
-      )
-    }
-
-    const startDate = new Date(date)
-    const endDate = new Date(startDate.getTime() + service.duration * 60000)
-
-    // Check for conflicts
-    const conflicts = await prisma.appointment.findMany({
-      where: {
-        status: { in: ['PENDING', 'CONFIRMED'] },
-        OR: [
-          {
-            AND: [
-              { date: { lte: startDate } },
-              { endDate: { gt: startDate } }
-            ]
-          },
-          {
-            AND: [
-              { date: { lt: endDate } },
-              { endDate: { gte: endDate } }
-            ]
-          },
-          {
-            AND: [
-              { date: { gte: startDate } },
-              { endDate: { lte: endDate } }
-            ]
-          }
-        ]
-      }
-    })
-
-    if (conflicts.length > 0) {
-      return NextResponse.json(
-        { error: "התור חופף לתור קיים" },
-        { status: 409 }
-      )
-    }
+    const appointmentDate = new Date(`${date}T${time}`)
 
     const appointment = await prisma.appointment.create({
       data: {
-        userId: session.user.id,
+        userId: userId || session.user.id,
         serviceId,
-        date: startDate,
-        endDate,
-        notes,
-        status: 'PENDING'
+        date: appointmentDate,
+        status: 'CONFIRMED',
+        notes
       },
       include: {
         service: true,
@@ -163,9 +109,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json(appointment, { status: 201 })
   } catch (error) {
-    console.error("Error creating appointment:", error)
+    console.error('Error creating appointment:', error)
     return NextResponse.json(
-      { error: "שגיאה ביצירת התור" },
+      { error: 'Failed to create appointment' },
       { status: 500 }
     )
   }

@@ -1,7 +1,9 @@
 import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
-import { prisma } from "@/lib/prisma"
+import { PrismaClient } from "@prisma/client"
 import bcrypt from "bcryptjs"
+
+const prisma = new PrismaClient()
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -13,7 +15,7 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error("נא למלא את כל השדות")
+          throw new Error("Invalid credentials")
         }
 
         const user = await prisma.user.findUnique({
@@ -22,17 +24,17 @@ export const authOptions: NextAuthOptions = {
           }
         })
 
-        if (!user) {
-          throw new Error("משתמש לא קיים")
+        if (!user || !user.password) {
+          throw new Error("Invalid credentials")
         }
 
-        const isPasswordValid = await bcrypt.compare(
+        const isCorrectPassword = await bcrypt.compare(
           credentials.password,
           user.password
         )
 
-        if (!isPasswordValid) {
-          throw new Error("סיסמה שגויה")
+        if (!isCorrectPassword) {
+          throw new Error("Invalid credentials")
         }
 
         return {
@@ -53,7 +55,7 @@ export const authOptions: NextAuthOptions = {
       return token
     },
     async session({ session, token }) {
-      if (session.user) {
+      if (session?.user) {
         session.user.role = token.role as string
         session.user.id = token.id as string
       }
@@ -61,11 +63,10 @@ export const authOptions: NextAuthOptions = {
     }
   },
   pages: {
-    signIn: "/login",
+    signIn: '/login',
   },
   session: {
     strategy: "jwt",
   },
   secret: process.env.NEXTAUTH_SECRET,
 }
-
