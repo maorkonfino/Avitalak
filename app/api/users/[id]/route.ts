@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/prisma'
 import { authOptions } from '@/lib/auth-options'
 import bcrypt from 'bcryptjs'
 
-const prisma = new PrismaClient()
 
 export async function GET(
   request: NextRequest,
