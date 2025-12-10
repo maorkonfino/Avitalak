@@ -1,12 +1,5 @@
 {
-  "buildCommand": "prisma generate && next build",
-  "installCommand": "npm install",
-  "framework": "nextjs",
-  "regions": ["tel1"],
-  "env": {
-    "DATABASE_URL": "@database_url",
-    "NEXTAUTH_SECRET": "@nextauth_secret",
-    "NEXTAUTH_URL": "@nextauth_url"
-  }
+  "buildCommand": "npm run build",
+  "installCommand": "npm install"
 }
 
