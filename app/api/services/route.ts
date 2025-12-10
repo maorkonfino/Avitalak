@@ -11,9 +11,6 @@ export async function GET(request: NextRequest) {
     
     console.log('[Services API] Fetching services, includeInactive:', includeInactive)
     
-    // Ensure Prisma is connected
-    await prisma.$connect()
-    
     const services = await prisma.service.findMany({
       where: includeInactive ? {} : { active: true },
       orderBy: { name: 'asc' }
@@ -23,30 +20,11 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json(services)
   } catch (error) {
-    console.error('[Services API] Error fetching services:', error)
-    
-    // Try to reconnect and retry once
-    try {
-      await prisma.$disconnect()
-      await prisma.$connect()
-      
-      const searchParams = request.nextUrl.searchParams
-      const includeInactive = searchParams.get('includeInactive') === 'true'
-      
-      const services = await prisma.service.findMany({
-        where: includeInactive ? {} : { active: true },
-        orderBy: { name: 'asc' }
-      })
-      
-      console.log('[Services API] Retry successful, fetched', services.length, 'services')
-      return NextResponse.json(services)
-    } catch (retryError) {
-      console.error('[Services API] Retry failed:', retryError)
-      return NextResponse.json(
-        { error: 'Failed to fetch services' },
-        { status: 500 }
-      )
-    }
+    console.error('[Services API] Error details:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch services', details: error instanceof Error ? error.message : String(error) },
+      { status: 500 }
+    )
   }
 }
 
