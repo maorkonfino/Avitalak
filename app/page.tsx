@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Check, Sparkles, Star, Heart, Award, Users, Clock, ChevronLeft } from "lucide-react";
+import { Calendar, Check, Sparkles, Star, Clock, ChevronLeft } from "lucide-react";
 import * as LucideIcons from 'lucide-react';
 import { useState, useEffect } from "react";
 
@@ -78,13 +78,6 @@ export default function Home() {
     return <Icon className="h-5 w-5 text-brand-brown" />
   }
 
-  const stats = [
-    { icon: Users, value: "1000+", label: "לקוחות מרוצות" },
-    { icon: Award, value: "15", label: "שנות ניסיון" },
-    { icon: Star, value: "5.0", label: "דירוג ממוצע" },
-    { icon: Heart, value: "100%", label: "שביעות רצון" },
-  ]
-
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
@@ -140,22 +133,6 @@ export default function Home() {
                 <ChevronLeft className="mr-2 h-5 w-5" />
               </Button>
             </div>
-          </div>
-
-          {/* Stats */}
-          <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
-            {stats.map((stat, index) => {
-              const Icon = stat.icon
-              return (
-                <div key={index} className="text-center">
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mb-3">
-                    <Icon className="h-6 w-6 text-primary" />
-                  </div>
-                  <div className="text-3xl font-bold text-primary mb-1">{stat.value}</div>
-                  <div className="text-sm text-muted-foreground">{stat.label}</div>
-                </div>
-              )
-            })}
           </div>
         </div>
 
