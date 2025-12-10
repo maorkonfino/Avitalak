@@ -8,7 +8,7 @@ const prisma = new PrismaClient()
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -20,7 +20,8 @@ export async function GET(
       )
     }
 
-    if (session.user.role !== 'ADMIN' && session.user.id !== params.id) {
+    const { id } = await params
+    if (session.user.role !== 'ADMIN' && session.user.id !== id) {
       return NextResponse.json(
         { error: 'Forbidden' },
         { status: 403 }
@@ -28,7 +29,7 @@ export async function GET(
     }
 
     const user = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id },
       select: {
         id: true,
         name: true,
@@ -58,7 +59,7 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -70,7 +71,8 @@ export async function PATCH(
       )
     }
 
-    if (session.user.role !== 'ADMIN' && session.user.id !== params.id) {
+    const { id } = await params
+    if (session.user.role !== 'ADMIN' && session.user.id !== id) {
       return NextResponse.json(
         { error: 'Forbidden' },
         { status: 403 }
@@ -89,7 +91,7 @@ export async function PATCH(
     }
 
     const user = await prisma.user.update({
-      where: { id: params.id },
+      where: { id },
       data: updateData,
       select: {
         id: true,

@@ -7,7 +7,7 @@ const prisma = new PrismaClient()
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -19,8 +19,9 @@ export async function GET(
       )
     }
 
+    const { id } = await params
     const appointment = await prisma.appointment.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         service: true,
         user: {
@@ -53,7 +54,7 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -65,6 +66,7 @@ export async function PATCH(
       )
     }
 
+    const { id } = await params
     const body = await request.json()
     const { date, time, status, notes } = body
 
@@ -76,7 +78,7 @@ export async function PATCH(
     if (notes !== undefined) updateData.notes = notes
 
     const appointment = await prisma.appointment.update({
-      where: { id: params.id },
+      where: { id },
       data: updateData,
       include: {
         service: true,
@@ -103,7 +105,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -115,8 +117,9 @@ export async function DELETE(
       )
     }
 
+    const { id } = await params
     await prisma.appointment.delete({
-      where: { id: params.id }
+      where: { id }
     })
 
     return NextResponse.json({ message: 'Appointment deleted' })
