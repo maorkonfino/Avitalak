@@ -1,0 +1,116 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  phone         String?
+  password      String
+  role          UserRole  @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  appointments  Appointment[]
+  waitlist      Waitlist[]
+}
+
+model Service {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  nameEn      String?
+  description String?
+  duration    Int       // in minutes
+  price       Float
+  category    String    // גבות, ריסים, ציפורניים, חבילות, מיוחדים
+  icon        String?   // lucide icon name
+  active      Boolean   @default(true)
+  // Available days: 0=Sunday, 1=Monday, ... 6=Saturday
+  availableDays String  @default("0,1,2,3,4")  // JSON array as string: "0,1,2,3,4,5"
+  // Available hours: "09:00-18:00"
+  startTime   String    @default("09:00")
+  endTime     String    @default("18:00")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  appointments Appointment[]
+  waitlist    Waitlist[]
+}
+
+model Appointment {
+  id          String            @id @default(cuid())
+  userId      String
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  serviceId   String
+  service     Service           @relation(fields: [serviceId], references: [id])
+  date        DateTime
+  endDate     DateTime
+  status      AppointmentStatus @default(PENDING)
+  notes       String?
+  reminderSent Boolean          @default(false)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@index([date])
+  @@index([userId])
+  @@index([status])
+}
+
+model Waitlist {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  serviceId   String
+  service     Service  @relation(fields: [serviceId], references: [id])
+  date        DateTime
+  timeSlot    String   // "09:00", "09:30", etc.
+  notified    Boolean  @default(false)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([date])
+  @@index([serviceId])
+  @@index([active])
+}
+
+model Settings {
+  id                          String   @id @default(cuid())
+  // Email notification templates
+  newAppointmentEmailSubject  String   @default("אישור קביעת תור - Avital Ak")
+  newAppointmentEmailBody     String   @default("שלום {{customerName}},\n\nהתור שלך נקבע בהצלחה!\n\nפרטי התור:\n📅 תאריך: {{date}}\n🕐 שעה: {{time}}\n💅 שירות: {{serviceName}}\n⏱️ משך: {{duration}} דקות\n💰 מחיר: ₪{{price}}\n\nנתראה בקרוב!\nאביטל")
+  
+  updatedAppointmentEmailSubject String @default("עדכון תור - Avital Ak")
+  updatedAppointmentEmailBody    String @default("שלום {{customerName}},\n\nהתור שלך עודכן!\n\nפרטי התור החדשים:\n📅 תאריך: {{date}}\n🕐 שעה: {{time}}\n💅 שירות: {{serviceName}}\n⏱️ משך: {{duration}} דקות\n\nנתראה בקרוב!\nאביטל")
+  
+  cancelledAppointmentEmailSubject String @default("ביטול תור - Avital Ak")
+  cancelledAppointmentEmailBody    String @default("שלום {{customerName}},\n\nהתור שלך בוטל.\n\nפרטי התור:\n📅 תאריך: {{date}}\n🕐 שעה: {{time}}\n💅 שירות: {{serviceName}}\n\nניתן לקבוע תור חדש דרך האתר.\n\nאביטל")
+  
+  reminderEmailSubject        String   @default("תזכורת לתור מחר - Avital Ak")
+  reminderEmailBody           String   @default("שלום {{customerName}},\n\nרצינו להזכיר לך שיש לך תור מחר!\n\n📅 תאריך: {{date}}\n🕐 שעה: {{time}}\n💅 שירות: {{serviceName}}\n⏱️ משך: {{duration}} דקות\n\nמחכה לראות אותך!\nאביטל")
+  
+  waitlistNotificationSubject String   @default("תור התפנה! - Avital Ak")
+  waitlistNotificationBody    String   @default("שלום {{customerName}},\n\n🎉 יש חדשות טובות! תור התפנה!\n\n📅 תאריך: {{date}}\n💅 שירות: {{serviceName}}\n\nמהרי להיכנס לאתר ולקבוע את התור לפני שהוא יילקח.\n\nאביטל")
+  
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
+}

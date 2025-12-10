@@ -1,36 +1,131 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# אביטל אברמוב קונפינו - מערכת ניהול תורים
 
-## Getting Started
+אתר מתקדם לניהול תורים עבור טיפולי יופי - ציפורניים, גבות וריסים.
 
-First, run the development server:
+## תכונות
 
-```bash
+- 🔐 **מערכת משתמשים** - הרשמה, התחברות ותפקידים (משתמש/מנהל)
+- 📅 **קביעת תורים חכמה** - מערכת קביעת תורים מתקדמת עם חסימת זמנים
+- 📊 **פאנל ניהול** - לוח שנה, ניהול תורים, ניהול שירותים
+- 📋 **רשימת המתנה** - הצטרפות לרשימת המתנה כשאין מקום פנוי
+- 📧 **התראות אימייל** - תזכורות ועדכונים אוטומטיים
+- 🎨 **עיצוב מודרני** - UI/UX מתקדם עם Tailwind CSS
+
+## טכנולוגיות
+
+- **Frontend**: Next.js 15, React, TypeScript
+- **Styling**: Tailwind CSS, Shadcn/ui
+- **Database**: Prisma ORM (SQLite/PostgreSQL)
+- **Authentication**: NextAuth.js
+- **Calendar**: React Big Calendar
+- **Deployment**: Vercel/Render
+
+## התקנה מקומית
+
+1. שכפל את הפרויקט:
+\`\`\`bash
+git clone <repository-url>
+cd avitalak-app
+\`\`\`
+
+2. התקן תלויות:
+\`\`\`bash
+npm install
+\`\`\`
+
+3. הגדר משתני סביבה:
+צור קובץ `.env.local` עם הערכים הבאים:
+\`\`\`env
+DATABASE_URL="file:./dev.db"
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-secret-key"
+\`\`\`
+
+4. הגדר את הדאטאבייס:
+\`\`\`bash
+npx prisma generate
+npx prisma db push
+npx prisma db seed
+\`\`\`
+
+5. הרץ את השרת:
+\`\`\`bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+\`\`\`
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+6. פתח בדפדפן: `http://localhost:3000`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## משתמשי ברירת מחדל
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**מנהל:**
+- אימייל: `admin@test.com`
+- סיסמה: `admin123`
 
-## Learn More
+**משתמש רגיל:**
+- אימייל: `user@test.com`
+- סיסמה: `user123`
 
-To learn more about Next.js, take a look at the following resources:
+## פריסה ל-Production
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Vercel (מומלץ)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. התחבר ל-[Vercel](https://vercel.com)
+2. ייבא את הפרויקט מ-GitHub
+3. הגדר משתני סביבה:
+   - `DATABASE_URL` - חיבור ל-Supabase
+   - `NEXTAUTH_URL` - כתובת האתר
+   - `NEXTAUTH_SECRET` - מפתח סודי
 
-## Deploy on Vercel
+4. לחץ Deploy!
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Supabase Database
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. צור פרויקט חדש ב-[Supabase](https://supabase.com)
+2. העתק את ה-PostgreSQL connection string
+3. עדכן את `DATABASE_URL` ב-Vercel
+4. הרץ migrations:
+\`\`\`bash
+npx prisma migrate deploy
+npx prisma db seed
+\`\`\`
+
+### Render
+
+1. התחבר ל-[Render](https://render.com)
+2. צור Web Service חדש
+3. חבר את ה-GitHub repository
+4. הגדר:
+   - Build Command: `npm install && npx prisma generate && npm run build`
+   - Start Command: `npm start`
+   - Environment Variables: הוסף את כל המשתנים
+
+## מבנה הפרויקט
+
+\`\`\`
+avitalak-app/
+├── app/                    # Next.js 15 App Router
+│   ├── api/               # API Routes
+│   ├── admin/             # פאנל מנהל
+│   ├── dashboard/         # אזור אישי
+│   └── page.tsx           # דף הבית
+├── components/            # קומפוננטות React
+│   └── ui/               # Shadcn UI components
+├── lib/                   # Utilities ו-helpers
+├── prisma/               # Database schema ו-seeds
+│   ├── schema.prisma
+│   └── seed.ts
+├── public/               # קבצים סטטיים
+└── package.json
+\`\`\`
+
+## סקריפטים
+
+- `npm run dev` - הרצת שרת פיתוח
+- `npm run build` - בנייה ל-production
+- `npm start` - הרצת production build
+- `npx prisma studio` - פתיחת Prisma Studio
+- `npx prisma db seed` - הרצת seed למילוי נתוני בסיס
+
+## רישיון
+
+© 2024 אביטל אברמוב קונפינו. כל הזכויות שמורות.
