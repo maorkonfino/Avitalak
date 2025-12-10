@@ -96,10 +96,7 @@ export default function Home() {
               />
             </div>
             
-            <h1 className="text-6xl md:text-7xl font-bold mb-12 bg-gradient-to-r from-brand-brown via-brand-gold to-brand-brown-dark bg-clip-text text-transparent">
-              אביטל אברמוב קונפינו
-            </h1>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
               <Button 
                 size="lg" 
                 className="text-lg h-14 px-8"
