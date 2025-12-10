@@ -5,15 +5,18 @@ declare global {
   var prisma: PrismaClient | undefined
 }
 
-// Prevent multiple instances of Prisma Client in development
-const prisma = global.prisma || new PrismaClient({
-  log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
-})
+// Create Prisma Client with pgBouncer-compatible settings
+const createPrismaClient = () => {
+  return new PrismaClient({
+    log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
+  })
+}
+
+// Use a singleton pattern to prevent multiple instances
+export const prisma = global.prisma || createPrismaClient()
 
 if (process.env.NODE_ENV !== 'production') {
   global.prisma = prisma
 }
-
-export { prisma }
 
 
