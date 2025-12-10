@@ -3,10 +3,14 @@ import { getServerSession } from 'next-auth'
 import { prisma } from '@/lib/prisma'
 import { authOptions } from '@/lib/auth-options'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    // Check if we should include inactive services (for admin)
+    const searchParams = request.nextUrl.searchParams
+    const includeInactive = searchParams.get('includeInactive') === 'true'
+    
     const services = await prisma.service.findMany({
-      where: { active: true },
+      where: includeInactive ? {} : { active: true },
       orderBy: { name: 'asc' }
     })
     
