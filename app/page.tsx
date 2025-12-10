@@ -42,11 +42,12 @@ export default function Home() {
     fetch('/api/services')
       .then(res => res.json())
       .then(data => {
-        setServices(data)
+        setServices(Array.isArray(data) ? data : [])
         setLoading(false)
       })
       .catch(err => {
         console.error('Error loading services:', err)
+        setServices([])
         setLoading(false)
       })
   }, [])
