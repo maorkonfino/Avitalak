@@ -85,10 +85,6 @@ export default function Home() {
         {/* Background with gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-brand-cream via-background to-brand-beige/30" />
         
-        {/* Decorative elements */}
-        <div className="absolute top-20 right-10 w-72 h-72 bg-brand-gold/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 left-10 w-96 h-96 bg-brand-brown/10 rounded-full blur-3xl" />
-        
         <div className="container relative z-10 mx-auto px-4 text-center">
           <div className="animate-fade-in">
             {/* Logo */}
@@ -100,15 +96,9 @@ export default function Home() {
               />
             </div>
             
-            <h1 className="text-6xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-brand-brown via-brand-gold to-brand-brown-dark bg-clip-text text-transparent">
+            <h1 className="text-6xl md:text-7xl font-bold mb-12 bg-gradient-to-r from-brand-brown via-brand-gold to-brand-brown-dark bg-clip-text text-transparent">
               אביטל אברמוב קונפינו
             </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground mb-4 max-w-3xl mx-auto">
-              אומנית המתעסקת בטיפוח הציפורניים, הגבות והריסים
-            </p>
-            <p className="text-lg text-muted-foreground mb-12 max-w-2xl mx-auto">
-              פרפקציוניסטית שלא מתפשרת על איכות, אסתטיקה וסטריליות
-            </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 size="lg" 
@@ -133,13 +123,6 @@ export default function Home() {
                 <ChevronLeft className="mr-2 h-5 w-5" />
               </Button>
             </div>
-          </div>
-        </div>
-
-        {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-          <div className="w-6 h-10 border-2 border-primary/30 rounded-full flex items-start justify-center p-2">
-            <div className="w-1.5 h-3 bg-primary/50 rounded-full" />
           </div>
         </div>
       </section>
