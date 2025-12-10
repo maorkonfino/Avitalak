@@ -7,7 +7,7 @@ const prisma = new PrismaClient()
 
 export async function GET() {
   try {
-    const settings = await prisma.systemSettings.findFirst()
+    const settings = await prisma.settings.findFirst()
     return NextResponse.json(settings || {})
   } catch (error) {
     console.error('Error fetching settings:', error)
@@ -31,16 +31,16 @@ export async function PATCH(request: NextRequest) {
 
     const body = await request.json()
     
-    const existingSettings = await prisma.systemSettings.findFirst()
+    const existingSettings = await prisma.settings.findFirst()
     
     let settings
     if (existingSettings) {
-      settings = await prisma.systemSettings.update({
+      settings = await prisma.settings.update({
         where: { id: existingSettings.id },
         data: body
       })
     } else {
-      settings = await prisma.systemSettings.create({
+      settings = await prisma.settings.create({
         data: body
       })
     }

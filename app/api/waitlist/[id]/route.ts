@@ -20,7 +20,7 @@ export async function DELETE(
     }
 
     const { id } = await params
-    await prisma.waitlistEntry.delete({
+    await prisma.waitlist.delete({
       where: { id }
     })
 

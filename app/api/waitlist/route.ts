@@ -16,7 +16,7 @@ export async function GET() {
       )
     }
 
-    const waitlist = await prisma.waitlistEntry.findMany({
+    const waitlist = await prisma.waitlist.findMany({
       include: {
         service: true,
         user: {
@@ -55,14 +55,14 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { serviceId, preferredDate, notes } = body
+    const { serviceId, preferredDate, timeSlot } = body
 
-    const entry = await prisma.waitlistEntry.create({
+    const entry = await prisma.waitlist.create({
       data: {
         userId: session.user.id,
         serviceId,
-        preferredDate: preferredDate ? new Date(preferredDate) : null,
-        notes
+        date: preferredDate ? new Date(preferredDate) : new Date(),
+        timeSlot: timeSlot || '09:00'
       },
       include: {
         service: true,

@@ -10,15 +10,11 @@ import 'react-big-calendar/lib/addons/dragAndDrop/styles.css'
 import 'moment/locale/he'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft, ChevronRight, Plus, X, Edit, Trash2 } from 'lucide-react'
+import { Plus, Edit, Trash2 } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop'
-
-moment.locale('he')
-const localizer = momentLocalizer(moment)
-const DnDCalendar = withDragAndDrop(Calendar)
 
 interface CalendarEvent {
   id: string
@@ -27,6 +23,10 @@ interface CalendarEvent {
   end: Date
   resource: any
 }
+
+moment.locale('he')
+const localizer = momentLocalizer(moment)
+const DnDCalendar = withDragAndDrop<CalendarEvent, object>(Calendar)
 
 interface Service {
   id: string
@@ -253,19 +253,20 @@ export default function AdminCalendarPage() {
     }
   }
 
-  const handleEventDrop = async ({ event, start, end }: any) => {
+  const handleEventDrop = async ({ event, start }: { event: CalendarEvent; start: string | Date; end: string | Date }) => {
     try {
       const appointment = event.resource
+      const startDate = typeof start === 'string' ? new Date(start) : start
       
       // Calculate endDate based on service duration
-      const endDate = new Date(start)
+      const endDate = new Date(startDate)
       endDate.setMinutes(endDate.getMinutes() + appointment.service.duration)
 
       const response = await fetch(`/api/appointments/${event.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          date: start.toISOString(),
+          date: startDate.toISOString(),
           endDate: endDate.toISOString(),
           notes: appointment.notes || '',
           status: appointment.status,
@@ -286,16 +287,18 @@ export default function AdminCalendarPage() {
     }
   }
 
-  const handleEventResize = async ({ event, start, end }: any) => {
+  const handleEventResize = async ({ event, start, end }: { event: CalendarEvent; start: string | Date; end: string | Date }) => {
     try {
       const appointment = event.resource
+      const startDate = typeof start === 'string' ? new Date(start) : start
+      const endDate = typeof end === 'string' ? new Date(end) : end
 
       const response = await fetch(`/api/appointments/${event.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          date: start.toISOString(),
-          endDate: end.toISOString(),
+          date: startDate.toISOString(),
+          endDate: endDate.toISOString(),
           notes: appointment.notes || '',
           status: appointment.status,
         }),

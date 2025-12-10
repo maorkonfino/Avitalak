@@ -84,13 +84,28 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { serviceId, date, time, notes, userId } = body
 
+    // Get service details to calculate endDate
+    const service = await prisma.service.findUnique({
+      where: { id: serviceId }
+    })
+
+    if (!service) {
+      return NextResponse.json(
+        { error: 'Service not found' },
+        { status: 404 }
+      )
+    }
+
     const appointmentDate = new Date(`${date}T${time}`)
+    const endDate = new Date(appointmentDate)
+    endDate.setMinutes(endDate.getMinutes() + service.duration)
 
     const appointment = await prisma.appointment.create({
       data: {
         userId: userId || session.user.id,
         serviceId,
         date: appointmentDate,
+        endDate,
         status: 'CONFIRMED',
         notes
       },
