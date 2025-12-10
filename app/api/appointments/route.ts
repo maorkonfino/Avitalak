@@ -95,7 +95,16 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const appointmentDate = new Date(`${date}T${time}`)
+    // Handle date - can be either ISO string or date+time
+    let appointmentDate: Date
+    if (time) {
+      // Old format: separate date and time
+      appointmentDate = new Date(`${date}T${time}`)
+    } else {
+      // New format: ISO string
+      appointmentDate = new Date(date)
+    }
+    
     const endDate = new Date(appointmentDate)
     endDate.setMinutes(endDate.getMinutes() + service.duration)
 
@@ -125,7 +134,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error creating appointment:', error)
     return NextResponse.json(
-      { error: 'Failed to create appointment' },
+      { error: 'Failed to create appointment', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }
