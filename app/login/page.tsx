@@ -24,6 +24,13 @@ export default function LoginPage() {
     setIsLoading(true)
     setError('')
 
+    // Validation
+    if (!formData.email || !formData.password) {
+      setError('נא למלא את כל השדות')
+      setIsLoading(false)
+      return
+    }
+
     try {
       const result = await signIn('credentials', {
         email: formData.email,
@@ -32,7 +39,12 @@ export default function LoginPage() {
       })
 
       if (result?.error) {
-        setError(result.error)
+        // Translate error to Hebrew
+        if (result.error === 'CredentialsSignin' || result.error === 'Invalid credentials') {
+          setError('אימייל או סיסמה שגויים')
+        } else {
+          setError('שגיאה בהתחברות, נסי שוב')
+        }
       } else if (result?.ok) {
         // Check user role and redirect accordingly
         const sessionRes = await fetch('/api/auth/session')
@@ -45,7 +57,7 @@ export default function LoginPage() {
         }
       }
     } catch (error) {
-      setError('שגיאה בהתחברות')
+      setError('שגיאת חיבור, בדקי את החיבור לאינטרנט')
     } finally {
       setIsLoading(false)
     }
