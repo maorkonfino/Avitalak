@@ -1,7 +1,7 @@
 'use client'
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Calendar, Clock, Phone, Instagram, Facebook } from "lucide-react"
 import * as LucideIcons from 'lucide-react'
 import { useState, useEffect } from "react"
@@ -166,32 +166,34 @@ export default function Home() {
           ) : filtered.length === 0 ? (
             <p className="text-center text-muted-foreground py-12">אין שירותים בקטגוריה זו</p>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto">
               {filtered.map(service => (
-                <Card key={service.id} className="hover:shadow-lg transition-shadow border-brand-beige/60 bg-white">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start gap-3">
-                      <div className="w-9 h-9 rounded-full bg-brand-cream flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <ServiceIcon name={service.icon} />
-                      </div>
-                      <CardTitle className="text-base leading-snug">{service.name}</CardTitle>
+                <div
+                  key={service.id}
+                  className="bg-white rounded-xl border border-brand-beige/70 hover:border-brand-brown/30 hover:shadow-md transition-all p-5 flex flex-col gap-4"
+                >
+                  {/* Name */}
+                  <p className="font-semibold text-[15px] leading-snug text-right text-foreground">
+                    {service.name}
+                  </p>
+
+                  {/* Divider */}
+                  <div className="border-t border-brand-beige/60" />
+
+                  {/* Footer row */}
+                  <div className="flex items-center justify-between">
+                    <Button size="sm" className="rounded-full px-5" asChild>
+                      <Link href="/dashboard/book">קבעי תור</Link>
+                    </Button>
+                    <div className="text-right">
+                      <p className="text-lg font-bold text-brand-brown leading-none">₪{service.price}</p>
+                      <p className="text-xs text-muted-foreground flex items-center justify-end gap-1 mt-1">
+                        <Clock className="h-3 w-3" />
+                        {formatDuration(service.duration)}
+                      </p>
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-xl font-bold text-brand-brown">₪{service.price}</p>
-                        <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                          <Clock className="h-3 w-3" />
-                          {formatDuration(service.duration)}
-                        </p>
-                      </div>
-                      <Button size="sm" asChild>
-                        <Link href="/dashboard/book">קבעי תור</Link>
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               ))}
             </div>
           )}
