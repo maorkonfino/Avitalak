@@ -6,9 +6,8 @@ const prisma = new PrismaClient()
 async function main() {
   console.log('🌱 Starting seed...')
 
-  // Create admin user
   const adminPassword = await bcrypt.hash('admin123', 10)
-  const admin = await prisma.user.upsert({
+  await prisma.user.upsert({
     where: { email: 'admin@avitalak.co.il' },
     update: {},
     create: {
@@ -19,261 +18,204 @@ async function main() {
       role: 'ADMIN',
     },
   })
-  console.log('✅ Admin user created:', admin.email)
+  console.log('✅ Admin user ready')
 
-  // Create test user
-  const userPassword = await bcrypt.hash('user123', 10)
-  const user = await prisma.user.upsert({
-    where: { email: 'user@test.com' },
-    update: {},
-    create: {
-      email: 'user@test.com',
-      name: 'לקוחה לדוגמה',
-      phone: '050-1234567',
-      password: userPassword,
-      role: 'USER',
-    },
-  })
-  console.log('✅ Test user created:', user.email)
-
-  // Services with icons and availability
+  // Services mirrored from avitalak.co.il
   const services = [
-    // גבות
+    // ── גבות ─────────────────────────────────────────────────────────────
     {
-      name: 'מיקרובליידינג גבות',
-      nameEn: 'Microblading',
-      description: 'טכניקת שיער לשיער לגבות טבעיות וממולאות',
-      duration: 120,
-      price: 1200,
-      category: 'גבות',
-      icon: 'Eye',
-      availableDays: '0,1,2,3,4', // ראשון-חמישי
-      startTime: '09:00',
-      endTime: '17:00',
+      name: 'מיקרובליידינג טיפול 1',
+      description: 'טיפול מיקרובליידינג מלא - שיטת שיער לשיער לגבות טבעיות',
+      duration: 180, price: 1888, category: 'גבות', icon: 'Eye',
+      availableDays: '0,1,2,3,4', startTime: '09:00', endTime: '17:00',
     },
     {
-      name: 'פאודר גבות',
-      nameEn: 'Powder Brows',
-      description: 'גבות מושלמות עם אפקט איפור עדין',
-      duration: 90,
-      price: 1000,
-      category: 'גבות',
-      icon: 'Eye',
-      availableDays: '0,1,2,3,4',
-      startTime: '09:00',
-      endTime: '17:00',
+      name: 'מיקרובליידינג טיפול 2',
+      description: 'טיפול מעקב / תלמידות',
+      duration: 90, price: 1, category: 'גבות', icon: 'Eye',
+      availableDays: '0,1,2,3,4', startTime: '09:00', endTime: '17:00',
     },
     {
       name: 'הרמת גבות',
-      nameEn: 'Brow Lamination',
-      description: 'החלקה וסידור גבות לאפקט מושלם',
-      duration: 45,
-      price: 150,
-      category: 'גבות',
-      icon: 'Eye',
-      availableDays: '0,1,2,3,4,5', // ראשון-שישי
-      startTime: '09:00',
-      endTime: '18:00',
+      description: 'הרמה וסידור גבות לתיקון צמיחה הפוכה ועיבוי',
+      duration: 30, price: 240, category: 'גבות', icon: 'Eye',
+      availableDays: '0,1,2,3,4,5', startTime: '09:00', endTime: '18:00',
     },
     {
-      name: 'צביעת גבות',
-      nameEn: 'Brow Tinting',
-      description: 'צביעה מקצועית לגבות מושלמות',
-      duration: 30,
-      price: 80,
-      category: 'גבות',
-      icon: 'Eye',
-      availableDays: '0,1,2,3,4,5',
-      startTime: '09:00',
-      endTime: '19:00',
+      name: 'גבות + שפם',
+      description: 'סידור גבות וסידור שפם',
+      duration: 20, price: 80, category: 'גבות', icon: 'Eye',
+      availableDays: '0,1,2,3,4,5', startTime: '09:00', endTime: '19:00',
     },
     {
-      name: 'סידור גבות',
-      nameEn: 'Brow Shaping',
-      description: 'עיצוב וסידור גבות בשעווה או פינצטה',
-      duration: 20,
-      price: 60,
-      category: 'גבות',
-      icon: 'Eye',
-      availableDays: '0,1,2,3,4,5',
-      startTime: '09:00',
-      endTime: '19:00',
+      name: 'שפם',
+      description: 'סידור שפם בלבד',
+      duration: 10, price: 30, category: 'גבות', icon: 'Eye',
+      availableDays: '0,1,2,3,4,5', startTime: '09:00', endTime: '19:00',
+    },
+    {
+      name: 'סידור גבות + צבע',
+      description: 'סידור גבות כולל צביעה',
+      duration: 30, price: 100, category: 'גבות', icon: 'Eye',
+      availableDays: '0,1,2,3,4,5', startTime: '09:00', endTime: '19:00',
+    },
+    {
+      name: 'גבות (ללא שפם)',
+      description: 'סידור גבות בלבד',
+      duration: 15, price: 70, category: 'גבות', icon: 'Eye',
+      availableDays: '0,1,2,3,4,5', startTime: '09:00', endTime: '19:00',
     },
 
-    // ריסים
+    // ── ריסים ────────────────────────────────────────────────────────────
     {
       name: 'הרמת ריסים',
-      nameEn: 'Lash Lift',
-      description: 'הרמה וסלסול לריסים טבעיים ויפים',
-      duration: 60,
-      price: 200,
-      category: 'ריסים',
-      icon: 'Eye',
-      availableDays: '0,1,2,3,4',
-      startTime: '09:00',
-      endTime: '18:00',
+      description: 'הרמה וסלסול ריסים טבעיים',
+      duration: 60, price: 355, category: 'ריסים', icon: 'Eye',
+      availableDays: '0,1,2,3,4', startTime: '09:00', endTime: '18:00',
     },
     {
-      name: 'הדבקת ריסים',
-      nameEn: 'Lash Extensions',
-      description: 'ריסים מלאכותיים לנפח מקסימלי',
-      duration: 120,
-      price: 350,
-      category: 'ריסים',
-      icon: 'Eye',
-      availableDays: '0,1,2,3,4',
-      startTime: '09:00',
-      endTime: '16:00',
-    },
-    {
-      name: 'מילוי ריסים',
-      nameEn: 'Lash Refill',
-      description: 'מילוי והשלמת ריסים קיימים',
-      duration: 90,
-      price: 250,
-      category: 'ריסים',
-      icon: 'Eye',
-      availableDays: '0,1,2,3,4,5',
-      startTime: '09:00',
-      endTime: '18:00',
+      name: 'צביעת ריסים',
+      description: 'צביעת ריסים בצבע כהה',
+      duration: 15, price: 40, category: 'ריסים', icon: 'Eye',
+      availableDays: '0,1,2,3,4,5', startTime: '09:00', endTime: '19:00',
     },
 
-    // ציפורניים
+    // ── ציפורניים ────────────────────────────────────────────────────────
     {
-      name: 'בניית ציפורניים בג׳ל',
-      nameEn: 'Gel Nail Extensions',
-      description: 'בניית ציפורניים באורך רצוי בג׳ל איכותי',
-      duration: 120,
-      price: 250,
-      category: 'ציפורניים',
-      icon: 'Hand',
-      availableDays: '0,1,2,3,4,5',
-      startTime: '09:00',
-      endTime: '19:00',
+      name: "לק ג'ל מבנה אנטומי",
+      description: "לק ג'ל עם תיקון מבנה אנטומי",
+      duration: 90, price: 207, category: 'ציפורניים', icon: 'Hand',
+      availableDays: '0,1,2,3,4,5', startTime: '09:00', endTime: '19:00',
     },
     {
-      name: 'לק ג׳ל טבעי',
-      nameEn: 'Natural Gel Polish',
-      description: 'לק ג׳ל על ציפורן טבעית',
-      duration: 60,
-      price: 120,
-      category: 'ציפורניים',
-      icon: 'Hand',
-      availableDays: '0,1,2,3,4,5,6', // כל השבוע
-      startTime: '09:00',
-      endTime: '20:00',
+      name: 'בניה',
+      description: 'בניית ציפורניים משקמת',
+      duration: 150, price: 355, category: 'ציפורניים', icon: 'Hand',
+      availableDays: '0,1,2,3,4,5', startTime: '09:00', endTime: '18:00',
     },
     {
-      name: 'מניקור רוסי',
-      nameEn: 'Russian Manicure',
-      description: 'מניקור יבש מקצועי עם קיוטיקל נקי',
-      duration: 90,
-      price: 150,
-      category: 'ציפורניים',
-      icon: 'Hand',
-      availableDays: '0,1,2,3,4,5',
-      startTime: '09:00',
-      endTime: '19:00',
+      name: 'מילוי בניה',
+      description: 'מילוי בניית ציפורניים',
+      duration: 90, price: 230, category: 'ציפורניים', icon: 'Hand',
+      availableDays: '0,1,2,3,4,5', startTime: '09:00', endTime: '18:00',
     },
     {
-      name: 'הסרת בניה',
-      nameEn: 'Gel Removal',
-      description: 'הסרת בניית ציפורניים קודמת',
-      duration: 30,
-      price: 50,
-      category: 'ציפורניים',
-      icon: 'Hand',
-      availableDays: '0,1,2,3,4,5,6',
-      startTime: '09:00',
-      endTime: '20:00',
+      name: "הסרת לק ג'ל ומניקור",
+      description: "הסרת לק ג'ל ומניקור",
+      duration: 40, price: 118, category: 'ציפורניים', icon: 'Hand',
+      availableDays: '0,1,2,3,4,5', startTime: '09:00', endTime: '19:00',
+    },
+    {
+      name: 'הסרת בנייה ומניקור',
+      description: 'הסרת בנייה ומניקור',
+      duration: 75, price: 155, category: 'ציפורניים', icon: 'Hand',
+      availableDays: '0,1,2,3,4,5', startTime: '09:00', endTime: '19:00',
+    },
+    {
+      name: 'בניה ארוכה (מעל 2 ס"מ)',
+      description: 'בניית ציפורניים ארוכות מעל 2 ס"מ',
+      duration: 150, price: 384, category: 'ציפורניים', icon: 'Hand',
+      availableDays: '0,1,2,3,4,5', startTime: '09:00', endTime: '18:00',
+    },
+    {
+      name: 'מילוי בניה ארוכה (מעל 2 ס"מ)',
+      description: 'מילוי בניה ארוכה מעל 2 ס"מ',
+      duration: 120, price: 284, category: 'ציפורניים', icon: 'Hand',
+      availableDays: '0,1,2,3,4,5', startTime: '09:00', endTime: '18:00',
     },
 
-    // חבילות
+    // ── חבילות ───────────────────────────────────────────────────────────
     {
-      name: 'חבילת גבות וריסים',
-      nameEn: 'Brows & Lashes Package',
-      description: 'הרמת גבות + הרמת ריסים במחיר מיוחד',
-      duration: 120,
-      price: 320,
-      category: 'חבילות',
-      icon: 'Star',
-      availableDays: '0,1,2,3,4',
-      startTime: '09:00',
-      endTime: '17:00',
+      name: "לק ג'ל מבנה אנטומי + גבות ושפם",
+      description: "לק ג'ל מבנה אנטומי עם סידור גבות ושפם",
+      duration: 110, price: 287, category: 'חבילות', icon: 'Package',
+      availableDays: '0,1,2,3,4,5', startTime: '09:00', endTime: '18:00',
     },
     {
-      name: 'חבילת מיקרובליידינג ומילוי',
-      nameEn: 'Microblading Package',
-      description: 'מיקרובליידינג + טיפול מילוי אחד',
-      duration: 240,
-      price: 1500,
-      category: 'חבילות',
-      icon: 'Star',
-      availableDays: '0,1,2',
-      startTime: '09:00',
-      endTime: '15:00',
+      name: 'בניה + גבות ושפם',
+      description: 'בניית ציפורניים עם סידור גבות ושפם',
+      duration: 140, price: 435, category: 'חבילות', icon: 'Package',
+      availableDays: '0,1,2,3,4,5', startTime: '09:00', endTime: '18:00',
     },
     {
-      name: 'חבילת פינוק מלא',
-      nameEn: 'Full Pampering Package',
-      description: 'גבות + ריסים + ציפורניים',
-      duration: 180,
-      price: 500,
-      category: 'חבילות',
-      icon: 'Star',
-      availableDays: '0,1,2,3',
-      startTime: '10:00',
-      endTime: '16:00',
+      name: 'מילוי בניה + גבות ושפם',
+      description: 'מילוי בניה עם סידור גבות ושפם',
+      duration: 110, price: 310, category: 'חבילות', icon: 'Package',
+      availableDays: '0,1,2,3,4,5', startTime: '09:00', endTime: '18:00',
+    },
+    {
+      name: "לק ג'ל מבנה אנטומי + ציורים",
+      description: "לק ג'ל מבנה אנטומי עם ציורים",
+      duration: 120, price: 272, category: 'חבילות', icon: 'Package',
+      availableDays: '0,1,2,3,4,5', startTime: '09:00', endTime: '18:00',
+    },
+    {
+      name: 'מילוי בניה + ציורים',
+      description: 'מילוי בניה עם ציורים',
+      duration: 120, price: 295, category: 'חבילות', icon: 'Package',
+      availableDays: '0,1,2,3,4,5', startTime: '09:00', endTime: '18:00',
+    },
+    {
+      name: 'הרמת ריסים + סידור גבות',
+      description: 'הרמת ריסים עם סידור גבות',
+      duration: 75, price: 435, category: 'חבילות', icon: 'Package',
+      availableDays: '0,1,2,3,4', startTime: '09:00', endTime: '17:00',
+    },
+    {
+      name: 'הרמת גבות + סידור גבות',
+      description: 'הרמת גבות עם סידור גבות',
+      duration: 60, price: 315, category: 'חבילות', icon: 'Package',
+      availableDays: '0,1,2,3,4,5', startTime: '09:00', endTime: '18:00',
+    },
+    {
+      name: 'הרמת ריסים + הרמת גבות',
+      description: 'הרמת ריסים עם הרמת גבות',
+      duration: 90, price: 590, category: 'חבילות', icon: 'Package',
+      availableDays: '0,1,2,3,4', startTime: '09:00', endTime: '17:00',
+    },
+    {
+      name: 'דיל משתלם! הרמת ריסים + הרמת גבות + סידור גבות',
+      description: 'חבילת שלושה טיפולים במחיר מיוחד',
+      duration: 105, price: 590, category: 'חבילות', icon: 'Star',
+      availableDays: '0,1,2,3,4', startTime: '09:00', endTime: '17:00',
+    },
+    {
+      name: "לק גל מבנה אנטומי + גבות שפם + צבע",
+      description: "לק גל מבנה אנטומי עם סידור גבות, שפם וצביעה",
+      duration: 120, price: 289, category: 'חבילות', icon: 'Package',
+      availableDays: '0,1,2,3,4,5', startTime: '09:00', endTime: '18:00',
+    },
+    {
+      name: 'מילוי בניה + גבות שפם + צבע',
+      description: 'מילוי בניה עם סידור גבות, שפם וצביעה',
+      duration: 120, price: 299, category: 'חבילות', icon: 'Package',
+      availableDays: '0,1,2,3,4,5', startTime: '09:00', endTime: '18:00',
+    },
+    {
+      name: 'בניה + גבות שפם + צבע',
+      description: 'בניה עם סידור גבות, שפם וצביעה',
+      duration: 150, price: 409, category: 'חבילות', icon: 'Package',
+      availableDays: '0,1,2,3,4,5', startTime: '09:00', endTime: '18:00',
     },
 
-    // מיוחדים
+    // ── מיוחדים ──────────────────────────────────────────────────────────
     {
-      name: 'טיפול כלה מלא',
-      nameEn: 'Bridal Package',
-      description: 'טיפול מקיף לכלה: גבות, ריסים, ציפורניים',
-      duration: 240,
-      price: 800,
-      category: 'מיוחדים',
-      icon: 'Star',
-      availableDays: '3,4', // רביעי וחמישי בלבד
-      startTime: '10:00',
-      endTime: '15:00',
+      name: "לק גל מבנה אנטומי - עבודת קטלוג",
+      description: "לק גל מבנה אנטומי לצורך עבודת קטלוג",
+      duration: 150, price: 466, category: 'מיוחדים', icon: 'Gem',
+      availableDays: '0,1,2,3,4', startTime: '09:00', endTime: '16:00',
     },
     {
-      name: 'ייעוץ אישי',
-      nameEn: 'Personal Consultation',
-      description: 'ייעוץ מקצועי לבחירת הטיפולים המתאימים',
-      duration: 30,
-      price: 0,
-      category: 'מיוחדים',
-      icon: 'Star',
-      availableDays: '0,1,2,3,4,5',
-      startTime: '09:00',
-      endTime: '19:00',
+      name: 'מילוי בניה - עבודת קטלוג',
+      description: 'מילוי בניה לצורך עבודת קטלוג',
+      duration: 150, price: 502, category: 'מיוחדים', icon: 'Gem',
+      availableDays: '0,1,2,3,4', startTime: '09:00', endTime: '16:00',
     },
     {
-      name: 'תיקון מיקרובליידינג',
-      nameEn: 'Microblading Touch-up',
-      description: 'תיקון וריענון מיקרובליידינג קיים',
-      duration: 60,
-      price: 400,
-      category: 'מיוחדים',
-      icon: 'Star',
-      availableDays: '0,1,2,3,4',
-      startTime: '09:00',
-      endTime: '18:00',
-    },
-    {
-      name: 'הסרת פיגמנט',
-      nameEn: 'Pigment Removal',
-      description: 'הסרת פיגמנט ישן או לא רצוי',
-      duration: 90,
-      price: 500,
-      category: 'מיוחדים',
-      icon: 'Star',
-      availableDays: '1,3', // שני ורביעי בלבד
-      startTime: '10:00',
-      endTime: '16:00',
+      name: 'בניה - עבודת קטלוג',
+      description: 'בניה לצורך עבודת קטלוג',
+      duration: 180, price: 585, category: 'מיוחדים', icon: 'Gem',
+      availableDays: '0,1,2,3,4', startTime: '09:00', endTime: '15:00',
     },
   ]
 
@@ -285,19 +227,12 @@ async function main() {
     })
   }
 
-  console.log(`✅ Created ${services.length} services`)
-
-  console.log('🎉 Seed completed successfully!')
-  console.log('\n📝 Login credentials:')
-  console.log('   Admin: admin@avitalak.co.il / admin123')
-  console.log('   User:  user@test.com / user123')
+  console.log(`✅ ${services.length} services seeded`)
+  console.log('\n📝 Admin login:')
+  console.log('   Email:    admin@avitalak.co.il')
+  console.log('   Password: admin123')
 }
 
 main()
-  .catch((e) => {
-    console.error('❌ Seed failed:', e)
-    process.exit(1)
-  })
-  .finally(async () => {
-    await prisma.$disconnect()
-  })
+  .catch((e) => { console.error('❌ Seed failed:', e); process.exit(1) })
+  .finally(() => prisma.$disconnect())

@@ -1,131 +1,112 @@
-# אביטל אברמוב קונפינו - מערכת ניהול תורים
+# Avital Ak — אביטל אברמוב קונפינו
 
-אתר מתקדם לניהול תורים עבור טיפולי יופי - ציפורניים, גבות וריסים.
+אתר קביעת תורים ופאנל ניהול לקליניקה של אביטל.  
+**Stack:** Next.js 15 · Prisma · PostgreSQL (Supabase) · NextAuth · Tailwind CSS · Vercel
 
-## תכונות
+---
 
-- 🔐 **מערכת משתמשים** - הרשמה, התחברות ותפקידים (משתמש/מנהל)
-- 📅 **קביעת תורים חכמה** - מערכת קביעת תורים מתקדמת עם חסימת זמנים
-- 📊 **פאנל ניהול** - לוח שנה, ניהול תורים, ניהול שירותים
-- 📋 **רשימת המתנה** - הצטרפות לרשימת המתנה כשאין מקום פנוי
-- 📧 **התראות אימייל** - תזכורות ועדכונים אוטומטיים
-- 🎨 **עיצוב מודרני** - UI/UX מתקדם עם Tailwind CSS
+## הרצה מקומית (Local Setup)
 
-## טכנולוגיות
+### 1. התקנת תלויות
 
-- **Frontend**: Next.js 15, React, TypeScript
-- **Styling**: Tailwind CSS, Shadcn/ui
-- **Database**: Prisma ORM (SQLite/PostgreSQL)
-- **Authentication**: NextAuth.js
-- **Calendar**: React Big Calendar
-- **Deployment**: Vercel/Render
-
-## התקנה מקומית
-
-1. שכפל את הפרויקט:
-\`\`\`bash
-git clone <repository-url>
-cd avitalak-app
-\`\`\`
-
-2. התקן תלויות:
-\`\`\`bash
+```bash
+cd Avitalak
 npm install
-\`\`\`
+```
 
-3. הגדר משתני סביבה:
-צור קובץ `.env.local` עם הערכים הבאים:
-\`\`\`env
-DATABASE_URL="file:./dev.db"
+### 2. הגדרת מסד הנתונים — Supabase (חינמי)
+
+1. צרי חשבון חינמי ב-[supabase.com](https://supabase.com)
+2. צרי **New Project**
+3. לכי ל-**Settings → Database → Connection string**
+4. העתיקי את **Transaction pooler** URI → זה יהיה `DATABASE_URL`
+5. העתיקי את **Direct connection** URI → זה יהיה `DIRECT_URL`
+
+### 3. יצירת קובץ `.env`
+
+```bash
+cp .env.example .env
+# ערכי את הערכים עם הנתונים מ-Supabase
+```
+
+```env
+DATABASE_URL="postgresql://postgres.[ref]:[pass]@...pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1"
+DIRECT_URL="postgresql://postgres.[ref]:[pass]@...supabase.com:5432/postgres"
 NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="your-secret-key"
-\`\`\`
+NEXTAUTH_SECRET="הפיקי עם: openssl rand -base64 32"
+```
 
-4. הגדר את הדאטאבייס:
-\`\`\`bash
-npx prisma generate
-npx prisma db push
-npx prisma db seed
-\`\`\`
+### 4. יצירת הטבלאות + מילוי נתוני ברירת מחדל
 
-5. הרץ את השרת:
-\`\`\`bash
+```bash
+npx prisma db push        # יוצר את הטבלאות
+npm run db:seed           # ממלא שירותים + משתמשת מנהלת
+```
+
+### 5. הרצה
+
+```bash
 npm run dev
-\`\`\`
+# → http://localhost:3000
+```
 
-6. פתח בדפדפן: `http://localhost:3000`
+**כניסת מנהלת:**  
+Email: `admin@avitalak.co.il`  
+Password: `admin123` ← שניי מיד אחרי ההתקנה!
 
-## משתמשי ברירת מחדל
+---
 
-**מנהל:**
-- אימייל: `admin@test.com`
-- סיסמה: `admin123`
+## פריסה (Deployment) — Vercel + Supabase
 
-**משתמש רגיל:**
-- אימייל: `user@test.com`
-- סיסמה: `user123`
+### Supabase (מסד נתונים)
+אותם שלבים כמו בסעיף Local — השתמשי באותו project.
 
-## פריסה ל-Production
+### Vercel (אחסון)
+1. הקוד כבר ב-GitHub: `github.com/maorkonfino/Avitalak`
+2. היכנסי ל-[vercel.com](https://vercel.com) והתחברי עם GitHub
+3. לחצי **New Project** ובחרי `Avitalak`
+4. הוסיפי Environment Variables:
+   - `DATABASE_URL` — Transaction pooler URL מ-Supabase
+   - `DIRECT_URL` — Direct connection URL מ-Supabase
+   - `NEXTAUTH_URL` — הדומיין שלך (`https://avitalak.vercel.app` או הדומיין שלך)
+   - `NEXTAUTH_SECRET` — מחרוזת רנדומלית
+5. לחצי **Deploy** ✓
 
-### Vercel (מומלץ)
+### דומיין מותאם אישית
+לאחר הפריסה, הגדירי `avitalak.co.il` ב-Vercel:  
+**Settings → Domains → Add domain**
 
-1. התחבר ל-[Vercel](https://vercel.com)
-2. ייבא את הפרויקט מ-GitHub
-3. הגדר משתני סביבה:
-   - `DATABASE_URL` - חיבור ל-Supabase
-   - `NEXTAUTH_URL` - כתובת האתר
-   - `NEXTAUTH_SECRET` - מפתח סודי
-
-4. לחץ Deploy!
-
-### Supabase Database
-
-1. צור פרויקט חדש ב-[Supabase](https://supabase.com)
-2. העתק את ה-PostgreSQL connection string
-3. עדכן את `DATABASE_URL` ב-Vercel
-4. הרץ migrations:
-\`\`\`bash
-npx prisma migrate deploy
-npx prisma db seed
-\`\`\`
-
-### Render
-
-1. התחבר ל-[Render](https://render.com)
-2. צור Web Service חדש
-3. חבר את ה-GitHub repository
-4. הגדר:
-   - Build Command: `npm install && npx prisma generate && npm run build`
-   - Start Command: `npm start`
-   - Environment Variables: הוסף את כל המשתנים
+---
 
 ## מבנה הפרויקט
 
-\`\`\`
-avitalak-app/
-├── app/                    # Next.js 15 App Router
-│   ├── api/               # API Routes
-│   ├── admin/             # פאנל מנהל
-│   ├── dashboard/         # אזור אישי
-│   └── page.tsx           # דף הבית
-├── components/            # קומפוננטות React
-│   └── ui/               # Shadcn UI components
-├── lib/                   # Utilities ו-helpers
-├── prisma/               # Database schema ו-seeds
-│   ├── schema.prisma
-│   └── seed.ts
-├── public/               # קבצים סטטיים
-└── package.json
-\`\`\`
+```
+app/
+  page.tsx              ← דף הבית
+  admin/
+    page.tsx            ← פאנל ניהול ראשי (עם סטטיסטיקות)
+    appointments/       ← ניהול תורים (אישור / ביטול / השלמה)
+    calendar/           ← לוח שנה drag-and-drop
+    services/           ← ניהול שירותים ומחירים
+    users/              ← ניהול לקוחות
+    waitlist/           ← רשימת המתנה
+    settings/           ← תבניות אימייל
+  dashboard/
+    book/               ← קביעת תור (לקוחות)
+    appointments/       ← התורים שלי
+    profile/            ← פרופיל אישי
+  courses/              ← דף קורסים
+  api/                  ← API routes
+prisma/
+  schema.prisma         ← מודל מסד הנתונים
+  seed.ts               ← 31 שירותים מהאתר הנוכחי
+```
 
-## סקריפטים
+---
 
-- `npm run dev` - הרצת שרת פיתוח
-- `npm run build` - בנייה ל-production
-- `npm start` - הרצת production build
-- `npx prisma studio` - פתיחת Prisma Studio
-- `npx prisma db seed` - הרצת seed למילוי נתוני בסיס
+## ניהול שירותים
 
-## רישיון
-
-© 2024 אביטל אברמוב קונפינו. כל הזכויות שמורות.
+כל השירותים מנוהלים דרך **פאנל ניהול → ניהול שירותים**:
+- הוספה / עריכה / מחיקה
+- הפעלה / השבתה
+- ימים וזמנים זמינים לכל שירות

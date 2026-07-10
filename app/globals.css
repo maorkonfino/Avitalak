@@ -2,103 +2,78 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Hebrew font optimization */
 @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap');
 
+/* ── Color tokens ────────────────────────────────────────────────────────── */
+:root {
+  /* Warm cream background matching avitalak.co.il */
+  --background:            34 44% 94%;   /* #F5F0EB */
+  --foreground:            25 30% 15%;   /* dark warm brown text */
+
+  --primary:               28 32% 41%;   /* brand-brown #8B6F47 */
+  --primary-foreground:     0  0% 100%;
+
+  --secondary:             32 30% 88%;
+  --secondary-foreground:  25 20% 20%;
+
+  --muted:                 34 25% 90%;
+  --muted-foreground:      25 15% 48%;
+
+  --accent:                34 35% 88%;
+  --accent-foreground:     25 20% 20%;
+
+  --card:                   0  0% 100%;
+  --card-foreground:       25 30% 15%;
+
+  --border:                32 22% 84%;
+  --ring:                  28 32% 41%;
+
+  --destructive:            0 84% 60%;
+  --destructive-foreground: 0  0% 100%;
+}
+
+/* ── Base ────────────────────────────────────────────────────────────────── */
 html,
 body {
   font-family: 'Heebo', sans-serif;
   direction: rtl;
-  background-color: #fafaf9;
-  color: #1c1917;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
   margin: 0;
   padding: 0;
 }
 
-/* Reset button defaults */
-button {
-  font-family: inherit;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  color: inherit;
-  outline: none;
-}
-
-/* Hide browser default icons for inputs */
-input::-ms-reveal,
-input::-ms-clear {
-  display: none;
-}
-
-input[type="password"]::-webkit-contacts-auto-fill-button,
-input[type="password"]::-webkit-credentials-auto-fill-button {
-  visibility: hidden;
-  pointer-events: none;
-  position: absolute;
-  right: 0;
-}
-
-input[type="email"]::-webkit-contacts-auto-fill-button,
-input[type="email"]::-webkit-credentials-auto-fill-button {
-  visibility: hidden;
-  pointer-events: none;
-  position: absolute;
-  right: 0;
-}
-
-/* Smooth scrolling */
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 80px;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+/* ── Scrollbar ───────────────────────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: hsl(var(--muted)); }
+::-webkit-scrollbar-thumb { background: #8B6F47; border-radius: 9999px; }
+
+/* ── Input autofill icon cleanup ─────────────────────────────────────────── */
+input::-ms-reveal,
+input::-ms-clear { display: none; }
+
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="email"]::-webkit-contacts-auto-fill-button {
+  visibility: hidden;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
 }
 
-::-webkit-scrollbar-track {
-  @apply bg-gray-100;
-}
-
-::-webkit-scrollbar-thumb {
-  @apply bg-amber-700 rounded-full;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-amber-800;
-}
-
-/* Animations */
+/* ── Animations ──────────────────────────────────────────────────────────── */
 @keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-
-.animate-fade-in {
-  animation: fade-in 1s ease-out;
-}
+.animate-fade-in { animation: fade-in 0.9s ease-out both; }
 
 @keyframes slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-
-.animate-slide-up {
-  animation: slide-up 0.6s ease-out;
-}
+.animate-slide-up { animation: slide-up 0.6s ease-out both; }

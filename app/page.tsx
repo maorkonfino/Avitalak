@@ -1,289 +1,233 @@
 'use client'
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Check, Sparkles, Star, Clock, ChevronLeft } from "lucide-react";
-import * as LucideIcons from 'lucide-react';
-import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Calendar, Clock, Phone, Instagram, Facebook } from "lucide-react"
+import * as LucideIcons from 'lucide-react'
+import { useState, useEffect } from "react"
+import Link from "next/link"
+
+function formatDuration(minutes: number) {
+  if (minutes < 60) return `${minutes} דק'`
+  const h = Math.floor(minutes / 60)
+  const m = minutes % 60
+  const hours = h === 1 ? 'שעה' : h === 2 ? 'שעתיים' : `${h} שעות`
+  return m ? `${hours} ${m} דק'` : hours
+}
+
+function ServiceIcon({ name }: { name?: string }) {
+  const Icon = name ? (LucideIcons as any)[name] ?? LucideIcons.Sparkles : LucideIcons.Sparkles
+  return <Icon className="h-5 w-5 text-brand-brown" />
+}
+
+const CATEGORIES = [
+  { id: 'all',      label: 'כל השירותים' },
+  { id: 'גבות',     label: 'גבות' },
+  { id: 'ריסים',    label: 'ריסים' },
+  { id: 'ציפורניים', label: 'ציפורניים' },
+  { id: 'חבילות',   label: 'חבילות' },
+  { id: 'מיוחדים',  label: 'מיוחדים' },
+]
 
 export default function Home() {
-  const [selectedCategory, setSelectedCategory] = useState<string>('all')
-
-  const features = [
-    {
-      title: "מיקרובליידינג",
-      description: "עיצוב וכתיבת גבות במראה טבעי בשיטת המיקרובליידינג",
-      icon: Sparkles,
-    },
-    {
-      title: "הרמת גבות וריסים",
-      description: "טיפולי הרמת גבות וריסים למראה מושלם ומטופח",
-      icon: Star,
-    },
-    {
-      title: "בניית ציפורניים",
-      description: "בניה משקמת לציפורניים פגועות ולק ג'ל מבנה אנטומי",
-      icon: Check,
-    },
-  ];
-
-  const categories = [
-    { id: 'all', name: 'הכל' },
-    { id: 'brows', name: 'גבות' },
-    { id: 'lashes', name: 'ריסים' },
-    { id: 'nails', name: 'ציפורניים' },
-    { id: 'packages', name: 'חבילות' },
-  ]
-
+  const [selectedCategory, setSelectedCategory] = useState('all')
   const [services, setServices] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     fetch('/api/services')
-      .then(res => res.json())
-      .then(data => {
-        setServices(Array.isArray(data) ? data : [])
-        setLoading(false)
-      })
-      .catch(err => {
-        console.error('Error loading services:', err)
-        setServices([])
-        setLoading(false)
-      })
+      .then(r => r.json())
+      .then(d => { setServices(Array.isArray(d) ? d : []); setLoading(false) })
+      .catch(() => setLoading(false))
   }, [])
 
-  const categoryMap: {[key: string]: string} = {
-    'all': 'all',
-    'brows': 'גבות',
-    'lashes': 'ריסים',
-    'nails': 'ציפורניים',
-    'packages': 'חבילות',
-  }
-
-  const filteredServices = selectedCategory === 'all' 
-    ? services 
-    : services.filter(s => s.category === categoryMap[selectedCategory])
-
-  const getIcon = (iconName?: string) => {
-    if (!iconName) {
-      return <Sparkles className="h-5 w-5 text-brand-brown" />
-    }
-    
-    const Icon = (LucideIcons as any)[iconName]
-    if (!Icon) {
-      console.warn(`Icon "${iconName}" not found in lucide-react, using Sparkles as fallback`)
-      return <Sparkles className="h-5 w-5 text-brand-brown" />
-    }
-    
-    return <Icon className="h-5 w-5 text-brand-brown" />
-  }
+  const filtered = selectedCategory === 'all'
+    ? services
+    : services.filter(s => s.category === selectedCategory)
 
   return (
     <div className="flex flex-col">
-      {/* Hero Section */}
-      <section id="home" className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
-        {/* Background with gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-brand-cream via-background to-brand-beige/30" />
-        
-        <div className="container relative z-10 mx-auto px-4 text-center">
-          <div className="animate-fade-in">
-            {/* Logo */}
-            <div className="mb-8">
-              <img 
-                src="/logo.avif" 
-                alt="אביטל אברמוב קונפינו" 
-                className="h-32 md:h-40 w-auto mx-auto"
-              />
-            </div>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-              <Button 
-                size="lg" 
-                className="text-lg h-14 px-8"
-                onClick={() => {
-                  window.location.href = '/dashboard/book'
-                }}
-              >
+
+      {/* ── Hero ─────────────────────────────────────────────────────────── */}
+      <section className="relative min-h-[88vh] flex items-center justify-center overflow-hidden">
+        <img
+          src="/avital-photo.avif"
+          alt="אביטל אברמוב קונפינו"
+          className="absolute inset-0 w-full h-full object-cover object-top"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-black/40" />
+
+        <div className="relative z-10 text-center px-4 animate-fade-in">
+          <img
+            src="/logo.avif"
+            alt="avital"
+            className="h-28 md:h-36 w-auto mx-auto mb-3 drop-shadow-lg"
+          />
+          <p className="text-white/90 text-lg md:text-xl tracking-widest mb-10 drop-shadow">
+            כשהיופי טבעי לך
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button size="lg" className="text-base h-12 px-8 shadow-lg" asChild>
+              <Link href="/dashboard/book">
                 <Calendar className="ml-2 h-5 w-5" />
                 קביעת תור
-              </Button>
-              <Button 
-                size="lg" 
-                variant="outline"
-                className="text-lg h-14 px-8"
-                onClick={() => {
-                  const element = document.getElementById('about')
-                  element?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                }}
-              >
-                למידע נוסף
-                <ChevronLeft className="mr-2 h-5 w-5" />
-              </Button>
-            </div>
+              </Link>
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="text-base h-12 px-8 bg-white/20 border-white text-white hover:bg-white/30 hover:text-white"
+              onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}
+            >
+              קצת עליי
+            </Button>
           </div>
         </div>
       </section>
 
-      {/* About Section */}
-      <section id="about" className="py-24 px-4 bg-muted/30">
-        <div className="container mx-auto">
-          <div className="grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
-            <div>
-              <h2 className="text-4xl font-bold mb-6 text-primary">נעים להכיר</h2>
-              <div className="space-y-4 text-muted-foreground leading-relaxed">
-                <p>
-                  אביטל אברמוב קונפינו, אומנית שמתעסקת בטיפוח הציפורניים, הגבות והריסים. 
-                  פרפקציוניסטית שלא מתפשרת על איכות, אסתטיקה וסטריליות. שמה לה למטרה 
-                  לטפל ולשרת ברמה גבוהה לכל לקוחה ותלמידה.
-                </p>
-                <p>
-                  אביטל התחילה להתעסק בתחום הגבות לפני 15 שנים, אחרי שהרסו לה את הגבות, 
-                  ומאז הפכה לאחראית על שיקום הגבות של כל הסובבים אותה. את העסק פתחה ב-2016 
-                  כדי לעסוק בתחום הציפורניים.
-                </p>
-                <p>
-                  היום היא מעצבת ויוצרת גבות במראה טבעי בשיטת המיקרובליידינג. בתחום 
-                  הציפורניים היא עובדת בשיטה של בניה משקמת לציפורניים פגועות והצליחה לעזור 
-                  לעשרות נשים להפסיק לכסוס ציפורניים ולגלות את היד הנשית שתמיד חלמו עליה.
-                </p>
-                <p className="font-semibold text-foreground">
-                  מה עוד היא עושה בקליניקה?
-                </p>
-                <p>
-                  טיפולי הרמת גבות לתיקון צמיחה הפוכה, עיבוי והחלקת שיערות קופצות. טיפולי 
-                  הרמת ריסים ולק ג'ל עם תיקון מבנה אנטומי.
-                </p>
-                <p>
-                  את הידע שלה היא גם מעבירה הלאה. לאביטל יש תואר ראשון בחינוך ותעודת הוראה 
-                  והיא מעבירה הדרכות והשתלמויות במכללות ובקליניקה הפרטית שלה.
-                </p>
+      {/* ── About ────────────────────────────────────────────────────────── */}
+      <section id="about" className="py-24 px-4">
+        <div className="container mx-auto max-w-5xl">
+          <div className="grid md:grid-cols-2 gap-14 items-center">
+            <div className="space-y-5 text-[hsl(var(--foreground))] leading-relaxed order-2 md:order-1">
+              <h2 className="text-4xl font-semibold text-brand-brown-dark mb-6">נעים להכיר,</h2>
+              <p>
+                אביטל אברמוב קונפינו, אומנית שמתעסקת בטיפוח הציפורניים, הגבות והריסים.
+                פרפקציוניסטית שלא מתפשרת על איכות, אסתטיקה וסטריליות.
+              </p>
+              <p>
+                אביטל התחילה להתעסק בתחום הגבות לפני 15 שנים, אחרי שהרסו לה את הגבות,
+                ומאז הפכה לאחראית על שיקום הגבות של כל הסובבים אותה.
+                את העסק פתחה ב-2016 כדי לעסוק בתחום הציפורניים.
+              </p>
+              <p>
+                היום היא מעצבת גבות במראה טבעי בשיטת המיקרובליידינג ועובדת בשיטה של בניה
+                משקמת לציפורניים פגועות — והצליחה לעזור לעשרות נשים לגלות את היד הנשית
+                שתמיד חלמו עליה.
+              </p>
+              <p className="text-brand-brown font-medium">
+                בנוסף — טיפולי הרמת גבות, הרמת ריסים, ולק ג&apos;ל עם תיקון מבנה אנטומי.
+                לאביטל תואר ראשון בחינוך ותעודת הוראה, והיא מעבירה השתלמויות במכללות
+                ובקליניקה הפרטית שלה.
+              </p>
+              <div className="pt-2">
+                <Button asChild>
+                  <a href="tel:054-6714655">
+                    <Phone className="ml-2 h-4 w-4" />
+                    054-6714655
+                  </a>
+                </Button>
               </div>
             </div>
-            <div className="relative">
-              <div className="relative rounded-2xl overflow-hidden shadow-xl">
-                <img 
-                  src="/avital-photo.avif" 
-                  alt="אביטל אברמוב קונפינו" 
+            <div className="relative order-1 md:order-2">
+              <div className="rounded-2xl overflow-hidden shadow-2xl">
+                <img
+                  src="/avital-photo.avif"
+                  alt="אביטל אברמוב קונפינו"
                   className="w-full h-auto"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex items-end pointer-events-none">
-                  <div className="p-8 text-white w-full">
-                    <p className="text-2xl font-bold mb-2">
-                      אביטל אברמוב קונפינו
-                    </p>
-                    <p className="text-white/90">
-                      מוכנה להגשים לך חלום לגבות מושלמות, 
-                      ריסים מהפנטות וידיים מטופחות ונשיות
-                    </p>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Services Features Section */}
-      <section className="py-24 px-4">
+      {/* ── Services ─────────────────────────────────────────────────────── */}
+      <section id="services" className="py-24 px-4 bg-brand-cream/60">
         <div className="container mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-4">התמחויות</h2>
-          <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
-            שלושת תחומי ההתמחות שלנו שבהם אנו מעניקות שירות ברמה הגבוהה ביותר
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {features.map((feature, index) => {
-              const Icon = feature.icon;
-              return (
-                <Card key={index} className="border-2 hover:border-primary hover:shadow-xl transition-all duration-300 group">
-                  <CardHeader className="text-center">
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-brand-brown/10 to-brand-gold/10 flex items-center justify-center mb-4 mx-auto group-hover:scale-110 transition-transform">
-                      <Icon className="h-8 w-8 text-primary" />
-                    </div>
-                    <CardTitle className="text-xl">{feature.title}</CardTitle>
-                    <CardDescription className="text-base">{feature.description}</CardDescription>
-                  </CardHeader>
-                </Card>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Services List Section */}
-      <section id="services" className="py-24 px-4 bg-muted/30">
-        <div className="container mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-4">השירותים שלנו</h2>
-          <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
-            מגוון רחב של טיפולים ושירותים ברמה המקצועית הגבוהה ביותר
+          <h2 className="text-4xl font-semibold text-center text-brand-brown-dark mb-3">קביעת תור</h2>
+          <p className="text-center text-muted-foreground mb-10 max-w-xl mx-auto">
+            בחרי שירות ותאמי תור ישירות מהאתר
           </p>
 
-          {/* Category Filter */}
-          <div className="flex flex-wrap justify-center gap-3 mb-12">
-            {categories.map((category) => (
-              <Button
-                key={category.id}
-                variant={selectedCategory === category.id ? 'default' : 'outline'}
-                onClick={() => setSelectedCategory(category.id)}
-                className="rounded-full"
+          {/* Category tabs */}
+          <div className="flex flex-wrap justify-center gap-2 mb-10">
+            {CATEGORIES.map(cat => (
+              <button
+                key={cat.id}
+                onClick={() => setSelectedCategory(cat.id)}
+                className={`px-5 py-2 rounded-full text-sm font-medium transition-all border ${
+                  selectedCategory === cat.id
+                    ? 'bg-brand-brown text-white border-brand-brown shadow'
+                    : 'bg-white text-brand-brown border-brand-beige hover:border-brand-brown/50'
+                }`}
               >
-                {category.name}
-              </Button>
+                {cat.label}
+              </button>
             ))}
           </div>
 
-          {/* Services Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
-            {loading ? (
-              <div className="col-span-full text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-                <p className="text-muted-foreground">טוען שירותים...</p>
-              </div>
-            ) : filteredServices.length === 0 ? (
-              <div className="col-span-full text-center py-12">
-                <p className="text-muted-foreground">אין שירותים זמינים בקטגוריה זו</p>
-              </div>
-            ) : (
-              filteredServices.map((service) => (
-                <Card key={service.id} className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-brown/10 to-brand-gold/10 flex items-center justify-center">
-                        {getIcon(service.icon)}
+          {/* Grid */}
+          {loading ? (
+            <div className="text-center py-16">
+              <div className="animate-spin rounded-full h-10 w-10 border-2 border-brand-brown border-t-transparent mx-auto mb-3" />
+              <p className="text-muted-foreground text-sm">טוענת שירותים...</p>
+            </div>
+          ) : filtered.length === 0 ? (
+            <p className="text-center text-muted-foreground py-12">אין שירותים בקטגוריה זו</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-6xl mx-auto">
+              {filtered.map(service => (
+                <Card key={service.id} className="hover:shadow-lg transition-shadow border-brand-beige/60 bg-white">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start gap-3">
+                      <div className="w-9 h-9 rounded-full bg-brand-cream flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <ServiceIcon name={service.icon} />
                       </div>
-                      <div className="flex-1">
-                        <CardTitle className="text-lg">{service.name}</CardTitle>
-                      </div>
+                      <CardTitle className="text-base leading-snug">{service.name}</CardTitle>
                     </div>
-                    <CardDescription>
-                      <div className="flex items-center gap-2 mt-2">
-                        <Clock className="h-4 w-4" />
-                        <span>{service.duration} דקות</span>
-                      </div>
-                      {service.description && (
-                        <p className="mt-2 text-sm">{service.description}</p>
-                      )}
-                    </CardDescription>
                   </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between">
-                    <div className="text-2xl font-bold text-primary">
-                      ₪{service.price}
+                  <CardContent>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xl font-bold text-brand-brown">₪{service.price}</p>
+                        <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                          <Clock className="h-3 w-3" />
+                          {formatDuration(service.duration)}
+                        </p>
+                      </div>
+                      <Button size="sm" asChild>
+                        <Link href="/dashboard/book">קבעי תור</Link>
+                      </Button>
                     </div>
-                    <Button 
-                      size="sm" 
-                      onClick={() => window.location.href = '/dashboard/book'}
-                    >
-                      קביעת תור
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-              ))
-            )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ── Contact CTA ──────────────────────────────────────────────────── */}
+      <section className="py-20 px-4 text-center">
+        <div className="max-w-lg mx-auto">
+          <img src="/logo.avif" alt="avital" className="h-16 w-auto mx-auto mb-6 opacity-80" />
+          <p className="text-muted-foreground mb-8 text-base">
+            רוצה לקבוע תור, לשאול שאלה, או סתם להתייעץ? אני כאן בשבילך.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button asChild>
+              <a href="https://wa.me/9720546714655" target="_blank" rel="noreferrer">
+                <Phone className="ml-2 h-4 w-4" />
+                WhatsApp
+              </a>
+            </Button>
+            <Button variant="outline" asChild>
+              <a href="https://www.instagram.com/avital_ak" target="_blank" rel="noreferrer">
+                <Instagram className="ml-2 h-4 w-4" />
+                אינסטגרם
+              </a>
+            </Button>
+            <Button variant="outline" asChild>
+              <a href="https://www.facebook.com/avitalak" target="_blank" rel="noreferrer">
+                <Facebook className="ml-2 h-4 w-4" />
+                פייסבוק
+              </a>
+            </Button>
           </div>
         </div>
       </section>
 
     </div>
-  );
+  )
 }

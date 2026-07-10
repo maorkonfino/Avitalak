@@ -8,216 +8,99 @@ import { Button } from '@/components/ui/button'
 import { Calendar as CalendarIcon, Users, Settings, BarChart, Clock, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
 
+interface Stats {
+  todayAppointments: number
+  pendingAppointments: number
+  totalUsers: number
+  totalServices: number
+}
+
 export default function AdminPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [stats, setStats] = useState({
-    todayAppointments: 0,
-    pendingAppointments: 0,
-    totalUsers: 0,
-    totalServices: 0
-  })
+  const [stats, setStats] = useState<Stats>({ todayAppointments: 0, pendingAppointments: 0, totalUsers: 0, totalServices: 0 })
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login')
-    } else if (status === 'authenticated' && session?.user?.role !== 'ADMIN') {
-      router.push('/dashboard')
-    }
+    if (status === 'unauthenticated') router.push('/login')
+    else if (status === 'authenticated' && session?.user?.role !== 'ADMIN') router.push('/dashboard')
   }, [status, session, router])
+
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user?.role === 'ADMIN') {
+      fetch('/api/admin/stats')
+        .then(r => r.json())
+        .then(setStats)
+        .catch(() => {})
+    }
+  }, [status, session])
 
   if (status === 'loading') {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">טוען...</p>
-        </div>
+        <div className="animate-spin rounded-full h-10 w-10 border-2 border-brand-brown border-t-transparent" />
       </div>
     )
   }
 
-  if (!session || session.user.role !== 'ADMIN') {
-    return null
-  }
+  if (!session || session.user.role !== 'ADMIN') return null
+
+  const statCards = [
+    { label: 'תורים היום',       value: stats.todayAppointments,  icon: CalendarIcon },
+    { label: 'ממתינים לאישור',   value: stats.pendingAppointments, icon: Clock },
+    { label: 'סך לקוחות',        value: stats.totalUsers,          icon: Users },
+    { label: 'שירותים פעילים',   value: stats.totalServices,       icon: CheckCircle },
+  ]
+
+  const actionCards = [
+    { title: 'לוח שנה',         desc: 'כל התורים בתצוגת לוח',      href: '/admin/calendar',     icon: CalendarIcon, primary: true },
+    { title: 'ניהול תורים',     desc: 'אישור, עדכון וביטול תורים', href: '/admin/appointments', icon: Clock,        primary: true },
+    { title: 'ניהול לקוחות',    desc: 'צפייה וניהול לקוחות',       href: '/admin/users',        icon: Users,        primary: false },
+    { title: 'ניהול שירותים',   desc: 'עריכת שירותים ומחירים',     href: '/admin/services',     icon: Settings,     primary: false },
+    { title: 'רשימת המתנה',     desc: 'לקוחות בהמתנה לתור',       href: '/admin/waitlist',     icon: Clock,        primary: false },
+    { title: 'הגדרות',          desc: 'הגדרות כלליות ותזכורות',    href: '/admin/settings',     icon: Settings,     primary: false },
+  ]
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">פאנל ניהול</h1>
-          <p className="text-muted-foreground">ברוך הבא, {session.user.name}</p>
-        </div>
+    <div className="container mx-auto px-4 py-12 max-w-7xl">
+      <div className="mb-8">
+        <h1 className="text-3xl font-semibold mb-1">פאנל ניהול</h1>
+        <p className="text-muted-foreground">ברוך הבא, {session.user.name}</p>
+      </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                תורים היום
-              </CardTitle>
-              <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+      {/* Stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {statCards.map(({ label, value, icon: Icon }) => (
+          <Card key={label}>
+            <CardHeader className="flex flex-row items-center justify-between pb-2 pt-4 px-4">
+              <CardTitle className="text-xs font-medium text-muted-foreground">{label}</CardTitle>
+              <Icon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{stats.todayAppointments}</div>
+            <CardContent className="px-4 pb-4">
+              <div className="text-3xl font-bold text-brand-brown">{value}</div>
             </CardContent>
           </Card>
+        ))}
+      </div>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                ממתינים לאישור
-              </CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{stats.pendingAppointments}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                סך לקוחות
-              </CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{stats.totalUsers}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                סך שירותים
-              </CardTitle>
-              <CheckCircle className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{stats.totalServices}</div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Main Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Card className="hover:shadow-lg transition-shadow">
+      {/* Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {actionCards.map(({ title, desc, href, icon: Icon, primary }) => (
+          <Card key={href} className="hover:shadow-md transition-shadow">
             <CardHeader>
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                <CalendarIcon className="h-6 w-6 text-primary" />
+              <div className="w-11 h-11 rounded-full bg-brand-cream flex items-center justify-center mb-3">
+                <Icon className="h-5 w-5 text-brand-brown" />
               </div>
-              <CardTitle>לוח שנה</CardTitle>
-              <CardDescription>
-                תצוגת כל התורים בלוח שנה
-              </CardDescription>
+              <CardTitle className="text-lg">{title}</CardTitle>
+              <CardDescription>{desc}</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" asChild>
-                <Link href="/admin/calendar">
-                  פתח לוח שנה
-                </Link>
+              <Button className="w-full" variant={primary ? 'default' : 'outline'} asChild>
+                <Link href={href}>{title}</Link>
               </Button>
             </CardContent>
           </Card>
-
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                <Clock className="h-6 w-6 text-primary" />
-              </div>
-              <CardTitle>ניהול תורים</CardTitle>
-              <CardDescription>
-                אישור, עדכון וביטול תורים
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full" asChild>
-                <Link href="/admin/appointments">
-                  ניהול תורים
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                <Users className="h-6 w-6 text-primary" />
-              </div>
-              <CardTitle>ניהול לקוחות</CardTitle>
-              <CardDescription>
-                צפייה וניהול לקוחות
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full" variant="outline" asChild>
-                <Link href="/admin/users">
-                  ניהול לקוחות
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                <Settings className="h-6 w-6 text-primary" />
-              </div>
-              <CardTitle>ניהול שירותים</CardTitle>
-              <CardDescription>
-                עריכת שירותים ומחירים
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full" variant="outline" asChild>
-                <Link href="/admin/services">
-                  ניהול שירותים
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                <BarChart className="h-6 w-6 text-primary" />
-              </div>
-              <CardTitle>דוחות וסטטיסטיקות</CardTitle>
-              <CardDescription>
-                צפייה בנתונים עסקיים
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full" variant="outline" asChild>
-                <Link href="/admin/reports">
-                  דוחות
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                <Settings className="h-6 w-6 text-primary" />
-              </div>
-              <CardTitle>הגדרות מערכת</CardTitle>
-              <CardDescription>
-                הגדרות כלליות ותזכורות
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full" variant="outline" asChild>
-                <Link href="/admin/settings">
-                  הגדרות
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+        ))}
       </div>
     </div>
   )
 }
-
