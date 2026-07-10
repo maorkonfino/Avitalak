@@ -183,7 +183,7 @@ export default function Home() {
                   {/* Footer row */}
                   <div className="flex items-center justify-between">
                     <Button size="sm" className="rounded-full px-5" asChild>
-                      <Link href="/dashboard/book">קבעי תור</Link>
+                      <Link href={`/dashboard/book?service=${service.id}`}>קבעי תור</Link>
                     </Button>
                     <div className="text-right">
                       <p className="text-lg font-bold text-brand-brown leading-none">₪{service.price}</p>
