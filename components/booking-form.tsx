@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -20,10 +20,13 @@ interface Service {
   endTime: string
 }
 
-export function BookingForm() {
+interface BookingFormProps {
+  preselectedServiceId?: string
+}
+
+export function BookingForm({ preselectedServiceId }: BookingFormProps) {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [services, setServices] = useState<Service[]>([])
   const [selectedService, setSelectedService] = useState<string>('')
   const [selectedDate, setSelectedDate] = useState<string>('')
@@ -40,13 +43,12 @@ export function BookingForm() {
     loadServices()
   }, [])
 
-  // Pre-select service from URL param once services are loaded
+  // Pre-select service passed from parent page once services are loaded
   useEffect(() => {
-    const serviceId = searchParams.get('service')
-    if (serviceId && services.length > 0 && !selectedService) {
-      setSelectedService(serviceId)
+    if (preselectedServiceId && services.length > 0 && !selectedService) {
+      setSelectedService(preselectedServiceId)
     }
-  }, [services, searchParams])
+  }, [services, preselectedServiceId])
 
   // טעינה אוטומטית של התור הפנוי הראשון כשבוחרים שירות
   useEffect(() => {
